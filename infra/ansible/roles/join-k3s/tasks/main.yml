@@ -1,11 +1,45 @@
 ---
-- name: Get k3s token from local file
-  local_action: "command cat /tmp/k3s_token"
-  register: k3s_token
-  become: false
-  changed_when: false
-
 - name: Join worker node to cluster
-  shell: "curl -sfL https://get.k3s.io | K3S_URL=https://{{ hostvars[groups['control'][0]]['ansible_host'] }}:6443 K3S_TOKEN={{ k3s_token.stdout }} sh -"
+  shell: "curl -sfL https://get.k3s.io | K3S_URL=https://{{ hostvars['machine-1']['ansible_host'] }}:6443 K3S_TOKEN={{ lookup('file', '/tmp/k3s_token') }} sh -"
   args:
     creates: /usr/local/bin/k3s
+
+- name: Check docker service status
+  command: systemctl status docker
+  register: docker_status
+  failed_when: false
+  changed_when: false
+
+- name: Display docker service status
+  debug:
+    var: docker_status.stdout_lines
+
+- name: Fetch docker logs
+  command: journalctl -u docker --no-pager
+  register: docker_logs
+  failed_when: false
+  changed_when: false
+
+- name: Display docker logs
+  debug:
+    var: docker_logs.stdout_lines
+
+- name: Check k3s agent service status
+  command: systemctl status k3s-agent
+  register: k3s_agent_status
+  failed_when: false
+  changed_when: false
+
+- name: Display k3s agent service status
+  debug:
+    var: k3s_agent_status.stdout_lines
+
+- name: Fetch k3s agent logs
+  command: journalctl -u k3s-agent --no-pager
+  register: k3s_agent_logs
+  failed_when: false
+  changed_when: false
+
+- name: Display k3s agent logs
+  debug:
+    var: k3s_agent_logs.stdout_lines

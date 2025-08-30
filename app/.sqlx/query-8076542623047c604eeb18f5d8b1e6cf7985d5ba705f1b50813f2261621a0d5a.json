@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT t.name FROM tags t\n        INNER JOIN post_tags pt ON t.id = pt.tag_id\n        WHERE pt.post_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8076542623047c604eeb18f5d8b1e6cf7985d5ba705f1b50813f2261621a0d5a"
+}

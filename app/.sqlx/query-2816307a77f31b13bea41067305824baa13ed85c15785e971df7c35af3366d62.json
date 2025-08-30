@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO tags (id, name, created_at)\n        VALUES ($1, $2, $3)\n        ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name\n        RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "2816307a77f31b13bea41067305824baa13ed85c15785e971df7c35af3366d62"
+}

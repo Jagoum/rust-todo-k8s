@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: blog_postgres
+    environment:
+      POSTGRES_DB: blog_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - blog_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d blog_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  blog_backend:
+    build: .
+    container_name: blog_backend
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/blog_db
+      RUST_LOG: info
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - blog_network
+    volumes:
+      - .:/app
+    working_dir: /app
+
+volumes:
+  postgres_data:
+
+networks:
+  blog_network:
+    driver: bridge

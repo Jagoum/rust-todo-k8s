@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT COUNT(DISTINCT f1.follower_id) as follower_count,\n                       COUNT(DISTINCT f2.following_id) as following_count\n                FROM users u\n                LEFT JOIN follows f1 ON u.id = f1.following_id\n                LEFT JOIN follows f2 ON u.id = f2.follower_id\n                WHERE u.id = $1\n                GROUP BY u.id\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "follower_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "following_count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "6a3993843a942387370b00300a64b460ef68bfd58cda3eb51043a2a580471a2b"
+}

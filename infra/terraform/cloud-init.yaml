@@ -1,5 +1,0 @@
-#cloud-config
-users:
-  - name: ubuntu
-    ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICMpbXVdaJ0ovRNqsON/r9zM/BQlrXnsbZqBk52/ip/o jagoum24@gmail.com

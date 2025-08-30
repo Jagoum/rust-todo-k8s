@@ -1,41 +1,23 @@
-variable "worker_count" {
-  description = "Number of worker nodes"
+variable "vm_count" {
+  description = "Number of VMs"
   type        = number
   default     = 2
 }
 
-variable "control_plane_cpus" {
-  description = "Number of CPUs for the control plane node"
+variable "vm_cpus" {
+  description = "Number of CPUs for the VMs"
   type        = number
   default     = 2
 }
 
-variable "control_plane_memory" {
-  description = "Memory for the control plane node"
+variable "vm_memory" {
+  description = "Memory for the VMs"
   type        = string
   default     = "2G"
 }
 
-variable "control_plane_disk" {
-  description = "Disk size for the control plane node"
-  type        = string
-  default     = "10G"
-}
-
-variable "worker_cpus" {
-  description = "Number of CPUs for the worker nodes"
-  type        = number
-  default     = 2
-}
-
-variable "worker_memory" {
-  description = "Memory for the worker nodes"
-  type        = string
-  default     = "2G"
-}
-
-variable "worker_disk" {
-  description = "Disk size for the worker nodes"
+variable "vm_disk" {
+  description = "Disk size for the VMs"
   type        = string
   default     = "10G"
 }

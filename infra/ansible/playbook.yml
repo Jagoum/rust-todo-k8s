@@ -3,26 +3,13 @@
   hosts: all
   gather_facts: true
   become: true
-  tasks:
-    - name: Ensure docker packages are installed
-      apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - gnupg
-        state: present
-
-- name: Configure control plane
-  hosts: control
-  become: true
   roles:
-    - role: install-k3s
-      tags: k3s
+    - role: install-docker
 
-- name: Configure worker nodes
-  hosts: workers
+- name: Harden all nodes
+  hosts: all
   become: true
+  vars:
+    ubtu24cis_rule_5_2_4: false
   roles:
-    - role: join-k3s
-      tags: k3s
+    - role: hardening

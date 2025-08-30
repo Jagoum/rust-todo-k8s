@@ -27,41 +27,41 @@ This document contains:
 
 ## Repo layout (suggested)
 
-```
-rust-todo-k8s/
-├── infra/
-│   ├── terraform/                # terraform + multipass provider
-│   │   ├── main.tf
-│   │   └── variables.tf
-│   └── ansible/
-│       ├── hosts.ini
-│       ├── playbook.yml
-│       └── roles/
-├── k8s/                          # kubernetes manifests (argon, cnpg, keycloak, app)
-│   ├── namespaces.yaml
-│   ├── registry.yaml
-│   ├── cnpg/                      # cloudnative-pg cluster manifest
-│   ├── keycloak/                  # helm values or operator manifest
-│   └── app/
-│       ├── deployment.yaml
-│       ├── service.yaml
-│       └── ingress.yaml
-├── app/                          # Rust app
-│   ├── Cargo.toml
-│   └── src/
-│       ├── main.rs
-│       ├── auth.rs
-│       ├── db.rs
-│       └── handlers.rs
-├── docker/                        # Dockerfiles and registry helper
-│   ├── Dockerfile
-│   └── registry-compose.yaml
-├── scripts/
-│   ├── build-and-load.sh         # build images + push to local registry or import into k3s
-│   ├── install-argocd.sh
-│   └── smoke-test.sh
-└── docs/
-    └── diagrams.mmd              # mermaid diagrams
+```md
+    rust-todo-k8s/
+    ├── infra/
+    │   ├── terraform/                # terraform + multipass provider
+    │   │   ├── main.tf
+    │   │   └── variables.tf
+    │   └── ansible/
+    │       ├── hosts.ini
+    │       ├── playbook.yml
+    │       └── roles/
+    ├── k8s/                          # kubernetes manifests (argon, cnpg, keycloak, app)
+    │   ├── namespaces.yaml
+    │   ├── registry.yaml
+    │   ├── cnpg/                      # cloudnative-pg cluster manifest
+    │   ├── keycloak/                  # helm values or operator manifest
+    │   └── app/
+    │       ├── deployment.yaml
+    │       ├── service.yaml
+    │       └── ingress.yaml
+    ├── app/                          # Rust app
+    │   ├── Cargo.toml
+    │   └── src/
+    │       ├── main.rs
+    │       ├── auth.rs
+    │       ├── db.rs
+    │       └── handlers.rs
+    ├── docker/                        # Dockerfiles and registry helper
+    │   ├── Dockerfile
+    │   └── registry-compose.yaml
+    ├── scripts/
+    │   ├── build-and-load.sh         # build images + push to local registry or import into k3s
+    │   ├── install-argocd.sh
+    │   └── smoke-test.sh
+    └── docs/
+        └── diagrams.mmd              # mermaid diagrams
 ```
 
 ---

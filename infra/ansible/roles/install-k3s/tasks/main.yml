@@ -4,11 +4,32 @@
   args:
     creates: /usr/local/bin/k3s
 
-- name: Get k3s token
-  command: "sudo cat /var/lib/rancher/k3s/server/node-token"
-  register: k3s_token
-  changed_when: false
+- name: Fetch the k3s token
+  become: true
+  fetch:
+    src: /var/lib/rancher/k3s/server/node-token
+    dest: /tmp/k3s_token
+    flat: yes
 
-- name: Store k3s token locally
-  local_action: "copy content={{ k3s_token.stdout }} dest=/tmp/k3s_token"
-  become: false
+- name: Create .kube directory for ubuntu user
+  file:
+    path: "/home/ubuntu/.kube"
+    state: directory
+    owner: "ubuntu"
+    group: "ubuntu"
+    mode: "0755"
+
+- name: Copy k3s config to ubuntu user
+  copy:
+    src: "/etc/rancher/k3s/k3s.yaml"
+    dest: "/home/ubuntu/.kube/config"
+    remote_src: true
+    owner: "ubuntu"
+    group: "ubuntu"
+    mode: "0600"
+
+- name: Adjust k3s config to be accessible from outside the VM
+  replace:
+    path: "/home/ubuntu/.kube/config"
+    regexp: 'https://127.0.0.1:6443'
+    replace: 'https://{{ ansible_host }}:6443'
