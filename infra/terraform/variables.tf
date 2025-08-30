@@ -13,11 +13,11 @@ variable "vm_cpus" {
 variable "vm_memory" {
   description = "Memory for the VMs"
   type        = string
-  default     = "2G"
+  default     = "3G"
 }
 
 variable "vm_disk" {
   description = "Disk size for the VMs"
   type        = string
-  default     = "10G"
+  default     = "20G"
 }

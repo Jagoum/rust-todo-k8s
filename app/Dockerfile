@@ -1,5 +1,5 @@
 # Use the official Rust image as base
-FROM rust:1.75-slim
+FROM rustlang/rust:nightly
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -14,12 +14,6 @@ WORKDIR /app
 # Copy Cargo files
 COPY Cargo.toml Cargo.lock ./
 
-# Create a dummy main.rs to cache dependencies
-RUN mkdir src && echo "fn main() {}" > src/main.rs
-
-# Build dependencies (this will be cached)
-RUN cargo build --release && rm -rf src
-
 # Copy source code
 COPY src/ src/
 COPY migrations/ migrations/
@@ -31,4 +25,4 @@ RUN cargo build --release
 EXPOSE 8080
 
 # Run the application
-CMD ["./target/release/blog-backend"]
+CMD ["./target/release/app"]

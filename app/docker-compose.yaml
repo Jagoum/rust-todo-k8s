@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: 192.168.82.88:5000/postgres:latest
     container_name: blog_postgres
     environment:
       POSTGRES_DB: blog_db

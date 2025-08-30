@@ -1,5 +1,5 @@
 [package]
-name = "blog-backend"
+name = "app"
 version = "0.1.0"
 edition = "2021"
 
@@ -19,3 +19,11 @@ log = "0.4"
 anyhow = "1.0"
 validator = { version = "0.16", features = ["derive"] }
 slug = "0.1"
+
+[dev-dependencies]
+actix-rt = "2"
+actix-http = "3"
+
+[[test]]
+name = "test_posts"
+path = "tests/test_posts.rs"

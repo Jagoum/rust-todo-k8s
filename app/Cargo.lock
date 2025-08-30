@@ -104,6 +104,7 @@ version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92589714878ca59a7626ea19734f0e07a6a875197eec751bb5d3f99e64998c63"
 dependencies = [
+ "actix-macros",
  "futures-core",
  "tokio",
 ]
@@ -280,6 +281,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0674a1ddeecb70197781e945de4b3b8ffb61fa939a5597bcf48503737663100"
 
 [[package]]
+name = "app"
+version = "0.1.0"
+dependencies = [
+ "actix-cors",
+ "actix-http",
+ "actix-rt",
+ "actix-web",
+ "anyhow",
+ "bcrypt",
+ "chrono",
+ "env_logger",
+ "jsonwebtoken",
+ "log",
+ "serde",
+ "serde_json",
+ "slug",
+ "sqlx",
+ "tokio",
+ "uuid",
+ "validator",
+]
+
+[[package]]
 name = "atoi"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -356,27 +380,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
 dependencies = [
  "generic-array",
-]
-
-[[package]]
-name = "blog-backend"
-version = "0.1.0"
-dependencies = [
- "actix-cors",
- "actix-web",
- "anyhow",
- "bcrypt",
- "chrono",
- "env_logger",
- "jsonwebtoken",
- "log",
- "serde",
- "serde_json",
- "slug",
- "sqlx",
- "tokio",
- "uuid",
- "validator",
 ]
 
 [[package]]
