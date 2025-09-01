@@ -3,3 +3,4 @@
   become: true
   roles:
     - k3s
+    - offline_registry_dns
