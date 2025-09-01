@@ -1,15 +1,5 @@
 ---
-- name: Prepare all nodes
-  hosts: all
-  gather_facts: true
+- hosts: all
   become: true
   roles:
-    - role: install-docker
-
-- name: Harden all nodes
-  hosts: all
-  become: true
-  vars:
-    ubtu24cis_rule_5_2_4: false
-  roles:
-    - role: hardening
+    - k3s

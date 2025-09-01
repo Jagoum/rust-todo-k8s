@@ -1,0 +1,6 @@
+apiVersion: rbacc.authoriztion.k8s.io/v1
+Kind: Role 
+metadata: 
+    name: pod-reader
+    namespace: dev-ns
+
