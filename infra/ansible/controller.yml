@@ -1,0 +1,62 @@
+---
+- name: Enable IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    state: present
+    reload: yes
+
+
+- name: Initialize the Kubernetes cluster
+  shell: kubeadm init --pod-network-cidr=10.244.0.0/16
+  args:
+    creates: /etc/kubernetes/admin.conf
+
+- name: Create .kube directory
+  file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+
+- name: Copy admin.conf to user's kube config
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/ubuntu/.kube/config
+    remote_src: yes
+    owner: ubuntu
+    group: ubuntu
+
+- name: Wait for Kubernetes API to respond
+  uri:
+    url: https://localhost:6443/healthz
+    method: GET
+    status_code: 200
+    validate_certs: no
+  register: result
+  until: result.status == 200
+  retries: 10
+  delay: 5
+
+
+- name: Install Calico CNI
+  become: yes
+  become_user: "{{ ansible_user }}"
+  environment:
+    KUBECONFIG: "/home/{{ ansible_user }}/.kube/config"
+
+  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+  args:
+    creates: /etc/cni/net.d/10-calico.conflist
+
+- name: Get the join command
+  shell: kubeadm token create --print-join-command
+  register: join_command
+
+- name: Debug join command output
+  debug:
+    var: join_command
+
+- name: Add join command to a local file
+  local_action: copy content="{{ join_command.stdout }}" dest="./join-command"
+  become: false
