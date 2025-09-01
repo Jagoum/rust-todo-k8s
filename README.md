@@ -1,98 +1,130 @@
-# Rust Todo App on Kubernetes
+# Todo App - Rust Backend + React Frontend
 
-This project is a comprehensive example of how to build and deploy a Rust-based todo application on Kubernetes. It includes the infrastructure setup using Terraform and Ansible, Kubernetes manifests, the Rust application itself, Dockerfiles for containerization, and various helper scripts.
+A full-stack todo application with Rust (Axum + SQLx) backend and React (Vite) frontend, containerized with multi-stage Docker builds.
 
-## Project Structure
+## Architecture
 
-The project is organized into the following directories:
+- **Backend**: Rust with Axum web framework, SQLx for PostgreSQL, JWT authentication
+- **Frontend**: React with TypeScript, Vite for fast development
+- **Database**: PostgreSQL
+- **Containerization**: Multi-stage Docker builds for optimized images
 
-```
-rust-todo-k8s/
-├── infra/
-│ ├── terraform/
-│ │ ├── main.tf
-│ │ └── variables.tf
-│ └── ansible/
-│ ├── hosts.ini
-│ ├── playbook.yml
-│ └── roles/
-├── k8s/
-│ ├── namespaces.yaml
-│ ├── registry.yaml
-│ ├── cnpg/
-│ ├── keycloak/
-│ └── app/
-│ ├── deployment.yaml
-│ ├── service.yaml
-│ └── ingress.yaml
-├── app/
-│ ├── Cargo.toml
-│ └── src/
-│ ├── main.rs
-│ ├── auth.rs
-│ ├── db.rs
-│ └── handlers.rs
-├── docker/
-│ ├── Dockerfile
-│ └── registry-compose.yaml
-├── scripts/
-│ ├── build-and-load.sh
-│ ├── install-argocd.sh
-│ └── smoke-test.sh
-└── docs/
-└── diagrams.mmd
+## Features
+
+- User registration and authentication (JWT)
+- CRUD operations for todos
+- Real-time UI updates
+- Responsive design
+- Containerized deployment
+
+## Development
+
+### Prerequisites
+- Rust 1.75+
+- Node.js 18+
+- Docker & Docker Compose
+- Local registry running at `registry.local:5000`
+
+### Backend Development
+```bash
+cd app
+cp .env.example .env
+# Edit .env with your database URL
+docker-compose up -d  # Start PostgreSQL
+cargo run
 ```
 
-- **`infra/`**: Contains the infrastructure as code.
-  - **`terraform/`**: Terraform scripts for provisioning the underlying infrastructure (e.g., VMs using Multipass).
-  - **`ansible/`**: Ansible playbooks for configuring the provisioned infrastructure.
-- **`k8s/`**: Kubernetes manifests for deploying the application and its dependencies.
-  - **`cnpg/`**: Manifests for the CloudNativePG PostgreSQL operator.
-  - **`keycloak/`**: Manifests for Keycloak for authentication.
-  - **`app/`**: Manifests for the Rust todo application.
-- **`app/`**: The Rust todo application source code.
-- **`docker/`**: Docker-related files.
-  - **`Dockerfile`**: For building the Rust application container image.
-  - **`registry-compose.yaml`**: A Docker Compose file for running a local Docker registry.
-- **`scripts/`**: Helper scripts for building, deploying, and testing the application.
-- **`docs/`**: Project documentation, including Mermaid diagrams.
+### Frontend Development
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Getting Started
+## Production Deployment
 
-To get started with this project, you will need to have the following tools installed:
+### Build and Test Locally
+```bash
+# Build all services
+docker-compose build
 
-- Terraform
-- Ansible
-- Docker
-- kubectl
-- A Kubernetes cluster (e.g., k3s, minikube)
+# Run the full stack
+docker-compose up -d
 
-1.  **Provision the infrastructure:**
-    ```bash
-    cd infra/terraform
-    terraform init
-    terraform apply
-    ```
+# Access the app
+open http://localhost:3000
+```
 
-2.  **Configure the infrastructure:**
-    ```bash
-    cd infra/ansible
-    ansible-playbook -i hosts.ini playbook.yml
-    ```
+### Build and Push to Registry
+```bash
+# Make script executable
+chmod +x build-and-push.sh
 
-3.  **Deploy the application to Kubernetes:**
-    ```bash
-    kubectl apply -f k8s/
-    ```
+# Build, test, and push images
+./build-and-push.sh v1.0.0
 
-## Usage
+# Or use latest tag
+./build-and-push.sh
+```
 
-Once the application is deployed, you can access it through the Ingress endpoint defined in `k8s/app/ingress.yaml`.
+### Multi-stage Build Benefits
 
-## Contributing
+**Backend Dockerfile:**
+- Builder stage: Full Rust toolchain for compilation
+- Runtime stage: Minimal Debian with only runtime dependencies
+- ~1.5GB builder → ~100MB runtime image
 
-Contributions are welcome! Please feel free to open an issue or submit a pull request.
+**Frontend Dockerfile:**
+- Builder stage: Node.js for building React app
+- Runtime stage: Nginx serving static files
+- ~1GB builder → ~50MB runtime image
 
-## License
+## API Endpoints
 
-This project is licensed under the terms of the LICENSE file.
+### Public
+- `POST /register` - User registration
+- `POST /login` - User login
+- `GET /healthz` - Health check
+
+### Protected (requires JWT)
+- `GET /todos` - List user's todos
+- `POST /todos` - Create new todo
+- `PUT /todos/:id` - Update todo
+- `DELETE /todos/:id` - Delete todo
+
+## Environment Variables
+
+### Backend
+- `DATABASE_URL` - PostgreSQL connection string
+- `JWT_SECRET` - Secret key for JWT tokens
+- `APP_HOST` - Server host (default: 0.0.0.0)
+- `APP_PORT` - Server port (default: 8080)
+- `RUST_LOG` - Log level (default: info)
+
+### Frontend
+- Proxies `/api/*` requests to backend
+- No environment variables needed in production
+
+## Testing
+
+```bash
+# Test backend
+cd app && cargo test
+
+# Test frontend
+cd frontend && npm test
+
+# Integration test with Docker
+./build-and-push.sh test
+```
+
+## Registry Images
+
+After running `build-and-push.sh`, images are available at:
+- `registry.local:5000/todo-app-backend:latest`
+- `registry.local:5000/todo-app-frontend:latest`
+- `registry.local:5000/library/postgres:16-alpine`
+
+## Kubernetes Deployment
+
+Ready for Kubernetes deployment with images in your local registry. See `k8s/` directory for manifests (to be created).

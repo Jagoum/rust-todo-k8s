@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   db:
-    image: registry.localhost:5000/library/postgres:16-alpine
+    image: registry.local:5000/library/postgres:16-alpine
     container_name: todo-postgres
     restart: unless-stopped
     environment:
