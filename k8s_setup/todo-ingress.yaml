@@ -1,26 +1,38 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: todo-ingress
-  namespace: default
+  name: react-todo-ui-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    kubernetes.io/ingress.class: traefik
 spec:
   rules:
-    - host: todo.com
+    - host: todo.local
       http:
         paths:
-          - path: /(.*)
+          - path: /
             pathType: Prefix
             backend:
               service:
                 name: react-todo-ui-service
                 port:
                   number: 3000
-          - path: /api/(.*)
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rust-todo-api-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+    - host: api.todo.local
+      http:
+        paths:
+          - path: /
             pathType: Prefix
             backend:
               service:
-                name: rust-todo-api-service
+                name: backend
                 port:
                   number: 8080
