@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: rust-todo-api
-          image: pavanelthepu/todo-api:1.0.2
+          image: "192.168.82.89:5000/todo-app-backend:latest"
           ports:
             - containerPort: 8080
           env:
@@ -35,7 +35,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: rust-todo-api-service
+  name: backend
   namespace: default
   labels:
     app: rust-todo-api

@@ -8,6 +8,12 @@ spec:
   instances: 3
   storage:
     size: 1Gi
+  bootstrap:
+    initdb:
+      database: todo_db
+      owner: todo_user
+      secret: 
+        name: db-secret
 
 ---
 # Storing the database credentials in a Secret
@@ -15,7 +21,9 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: db-secret
-type: Opaque
-data:
-  username: dXNlcm5hbWU=   # base64 encoded
-  password: cGFzc3dvcmQ=
+type: Kubernetes.io/basic-auth
+stringData:
+  username: todo_user  # base64 encoded
+  password: todo_password
+  DATABASE_URL: postgres://todo_user:todo_password@my-postgres-rw:5432/todo_db
+
