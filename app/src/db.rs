@@ -41,7 +41,7 @@ use tokio::time::{sleep, Duration};
 pub async fn connect_pool(db_url: &str) -> anyhow::Result<PgPool> {
     info!("Creating database connection pool with max 10 connections");
     
-    let max_retries = 30; // 30 retries = ~60 seconds with 2 second intervals
+    let max_retries = 10; // 30 retries = ~60 seconds with 2 second intervals
     let mut retry_count = 0;
     
     loop {

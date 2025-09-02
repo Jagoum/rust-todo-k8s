@@ -23,7 +23,7 @@ services:
     container_name: todo-backend
     restart: no
     environment:
-      DATABASE_URL: postgres://todo_user:todo_password@db:5432/todo_db
+      DATABASE_URL: postgres://todo_user:todo_password@todo-postgres:5432/todo_db
       JWT_SECRET: your_super_secret_jwt_key_change_in_production
       RUST_LOG: info
       APP_HOST: 0.0.0.0

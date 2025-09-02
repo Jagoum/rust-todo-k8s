@@ -24,7 +24,7 @@ sleep 10
 
 # Check if services are healthy
 echo "Checking service health..."
-if curl -f http://localhost:8080/healthz > /dev/null 2>&1; then
+if curl -f http://192.168.82.89:8080/healthz > /dev/null 2>&1; then
     echo "✅ Backend is healthy"
 else
     echo "❌ Backend health check failed"
@@ -32,7 +32,7 @@ else
     exit 1
 fi
 
-if curl -f http://localhost:3000 > /dev/null 2>&1; then
+if curl -f http://192.168.82.89:3000 > /dev/null 2>&1; then
     echo "✅ Frontend is healthy"
 else
     echo "❌ Frontend health check failed"
