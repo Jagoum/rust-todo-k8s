@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rust-todo-api
+  namespace: default
+  labels:
+    app: rust-todo-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rust-todo-api
+  template:
+    metadata:
+      labels:
+        app: rust-todo-api
+    spec:
+      containers:
+        - name: rust-todo-api
+          image: pavanelthepu/todo-api:1.0.2
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DATABASE_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_SECRET
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rust-todo-api-service
+  namespace: default
+  labels:
+    app: rust-todo-api
+spec:
+  selector:
+    app: rust-todo-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  db:
+    image: registry.local:5000/library/postgres:16-alpine
+    environment:
+      POSTGRES_DB: todo_db
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: todo_password
+    networks:
+      - test-network
+
+  backend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://todo_user:todo_password@db:5432/todo_db
+      JWT_SECRET: test_secret_key
+      RUST_LOG: info
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - test-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge

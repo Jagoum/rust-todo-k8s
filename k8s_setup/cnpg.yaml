@@ -1,0 +1,21 @@
+---
+# CRD , creating a Cluster of PostgreSQL
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: my-postgres
+spec:
+  instances: 3
+  storage:
+    size: 1Gi
+
+---
+# Storing the database credentials in a Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+data:
+  username: dXNlcm5hbWU=   # base64 encoded
+  password: cGFzc3dvcmQ=

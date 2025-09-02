@@ -1,21 +1,40 @@
 {
   "compilerOptions": {
+    // Target ES2020 for modern browser support
     "target": "ES2020",
+    // Use define for class fields (modern JS feature)
     "useDefineForClassFields": true,
+    // Include ES2020 and DOM type definitions
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    // Use ESNext modules for tree shaking
     "module": "ESNext",
+    // Skip type checking of declaration files for faster builds
     "skipLibCheck": true,
+    
+    // Module resolution
     "moduleResolution": "bundler",
+    // Allow importing TypeScript files with extensions
     "allowImportingTsExtensions": true,
+    // Allow importing JSON modules
     "resolveJsonModule": true,
+    // Ensure each file can be transpiled independently
     "isolatedModules": true,
+    // Don't emit JavaScript files (Vite handles this)
     "noEmit": true,
+    // Use React 17+ JSX transform
     "jsx": "react-jsx",
+    
+    // Type checking strictness
     "strict": true,
+    // Error on unused local variables
     "noUnusedLocals": true,
+    // Error on unused function parameters
     "noUnusedParameters": true,
+    // Error on switch statements without default cases
     "noFallthroughCasesInSwitch": true
   },
+  // Include all TypeScript files in src directory
   "include": ["src"],
+  // Reference to Node.js TypeScript configuration
   "references": [{ "path": "./tsconfig.node.json" }]
 }

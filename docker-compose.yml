@@ -1,0 +1,56 @@
+---
+
+services:
+  db:
+    image: registry.local:5000/library/postgres:16-alpine
+    container_name: todo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: todo_db
+      POSTGRES_USER: todo_user
+      POSTGRES_PASSWORD: todo_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - todo-network
+
+  backend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: todo-backend
+    restart: no
+    environment:
+      DATABASE_URL: postgres://todo_user:todo_password@db:5432/todo_db
+      JWT_SECRET: your_super_secret_jwt_key_change_in_production
+      RUST_LOG: info
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - todo-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: todo-frontend
+    restart: no
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - todo-network
+
+volumes:
+  pgdata: {}
+
+networks:
+  todo-network:
+    driver: bridge

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: react-todo-ui
+  namespace: default
+  labels:
+    app: react-todo-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: react-todo-ui
+  template:
+    metadata:
+      labels:
+        app: react-todo-ui
+    spec:
+      containers:
+        - name: react-todo-ui
+          image: pavanelthepu/todo-ui:1.0.2
+          ports:
+            - containerPort: 80
+          env:
+            - name: REACT_APP_BACKEND_SERVER_URL
+              value: "http://todo.com/api" # This will be handled by Ingress
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-todo-ui-service
+  namespace: default
+  labels:
+    app: react-todo-ui
+spec:
+  selector:
+    app: react-todo-ui
+  ports:
+    - protocol: TCP
+      port: 3000 # Frontend service port
+      targetPort: 80 # Container port where Nginx serves the app
+  type: ClusterIP

@@ -1,21 +1,65 @@
+/**
+ * # Todo Application Frontend
+ * 
+ * Main React component providing a complete todo management interface with user authentication.
+ * Features user registration/login, todo CRUD operations, and persistent authentication state.
+ * 
+ * ## Features
+ * - User authentication (register/login) with JWT tokens
+ * - Todo item management (create, read, update, delete)
+ * - Persistent login state using localStorage
+ * - Real-time UI feedback for all operations
+ * - Responsive design with CSS styling
+ * 
+ * ## Architecture
+ * - Single-page application using React hooks
+ * - Axios for HTTP API communication
+ * - JWT token-based authentication
+ * - Local state management for todos and user data
+ */
+
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 
+/**
+ * Todo item data structure
+ * Represents a single todo item as returned by the API
+ */
 interface Todo {
+  /** Unique identifier for the todo item */
   id: string
+  /** Title/description of the todo */
   title: string
+  /** Whether the todo has been completed */
   completed: boolean
+  /** ISO 8601 formatted creation timestamp */
   created_at: string
 }
 
+/**
+ * User authentication data structure
+ * Contains user information and authentication token
+ */
 interface User {
+  /** Username for display purposes */
   username: string
+  /** JWT token for API authentication */
   token: string
 }
 
+/** Base URL for all API requests (proxied by nginx) */
 const API_BASE = '/api'
 
+/**
+ * Main application component
+ * 
+ * Manages the entire application state including authentication and todo management.
+ * Renders different views based on authentication status.
+ * 
+ * @returns JSX element containing the complete application interface
+ */
 function App() {
+  // Authentication state
   const [user, setUser] = useState<User | null>(null)
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(false)
@@ -30,6 +74,10 @@ function App() {
   // Todo form state
   const [newTodo, setNewTodo] = useState('')
 
+  /**
+   * Initialize application state on component mount
+   * Checks for saved authentication data and loads user's todos
+   */
   useEffect(() => {
     const savedUser = localStorage.getItem('user')
     if (savedUser) {
@@ -39,6 +87,12 @@ function App() {
     }
   }, [])
 
+  /**
+   * Display temporary success or error messages
+   * 
+   * @param msg - Message to display
+   * @param type - Message type ('error' or 'success')
+   */
   const showMessage = (msg: string, type: 'error' | 'success') => {
     if (type === 'error') {
       setError(msg)
@@ -53,6 +107,14 @@ function App() {
     }, 3000)
   }
 
+  /**
+   * Handle user authentication (login or registration)
+   * 
+   * Validates input, sends authentication request to API, and handles response.
+   * On successful login, saves user data and fetches todos.
+   * 
+   * @param e - Form submission event
+   */
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!username.trim() || password.length < 6) {
@@ -82,6 +144,11 @@ function App() {
     setLoading(false)
   }
 
+  /**
+   * Handle user logout
+   * 
+   * Clears user state, todos, and removes authentication data from localStorage.
+   */
   const handleLogout = () => {
     setUser(null)
     setTodos([])
@@ -89,6 +156,13 @@ function App() {
     showMessage('Logged out successfully', 'success')
   }
 
+  /**
+   * Fetch todos from the API
+   * 
+   * Retrieves all todos for the authenticated user and updates local state.
+   * 
+   * @param token - JWT authentication token
+   */
   const fetchTodos = async (token: string) => {
     try {
       const response = await axios.get(`${API_BASE}/todos`, {
@@ -100,6 +174,13 @@ function App() {
     }
   }
 
+  /**
+   * Handle adding a new todo item
+   * 
+   * Validates input, sends create request to API, and refreshes todo list.
+   * 
+   * @param e - Form submission event
+   */
   const handleAddTodo = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTodo.trim()) return
@@ -119,6 +200,14 @@ function App() {
     setLoading(false)
   }
 
+  /**
+   * Handle toggling todo completion status
+   * 
+   * Sends update request to API to toggle the completed status of a todo item.
+   * 
+   * @param id - Todo item ID
+   * @param completed - Current completion status
+   */
   const handleToggleTodo = async (id: string, completed: boolean) => {
     try {
       await axios.put(`${API_BASE}/todos/${id}`,
@@ -131,6 +220,13 @@ function App() {
     }
   }
 
+  /**
+   * Handle deleting a todo item
+   * 
+   * Sends delete request to API and refreshes todo list.
+   * 
+   * @param id - Todo item ID to delete
+   */
   const handleDeleteTodo = async (id: string) => {
     try {
       await axios.delete(`${API_BASE}/todos/${id}`, {
@@ -143,6 +239,7 @@ function App() {
     }
   }
 
+  // Render authentication form if user is not logged in
   if (!user) {
     return (
       <div className="container">
@@ -194,6 +291,7 @@ function App() {
     )
   }
 
+  // Render main todo application interface for authenticated users
   return (
     <div className="container">
       <div className="header">
