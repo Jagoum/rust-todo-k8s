@@ -1,0 +1,25 @@
+# Ingress Configuration for Rust Backend API
+# This ingress routes external traffic to the Rust backend API
+# Host: api.todo.local will serve the REST API endpoints
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rust-todo-api-ingress
+  namespace: default
+  annotations:
+    # Specify Traefik as the ingress controller
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+    # Domain name for the backend API
+    - host: api.todo.local
+      http:
+        paths:
+          # Route all paths to the Rust backend service
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 8080

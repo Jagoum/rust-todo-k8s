@@ -1,0 +1,40 @@
+---
+# Database Secret for Rust Backend Application
+# This secret contains the credentials and connection string for the PostgreSQL database
+# Used by the Rust backend to connect to the CNPG-managed PostgreSQL cluster
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: default
+type: kubernetes.io/basic-auth
+stringData:
+  username: todo_user
+  password: todo_password
+  DATABASE_URL: postgres://todo_user:todo_password@my-postgres-rw:5432/todo_db
+
+---
+# PostgreSQL Cluster Configuration using CloudNativePG (CNPG)
+# This creates a highly available PostgreSQL cluster with 3 instances
+# CNPG provides automated failover, backup, and recovery capabilities
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: my-postgres
+  namespace: default
+spec:
+  # Number of PostgreSQL instances (pods) in the cluster
+  instances: 3
+  # Storage configuration for persistent data
+  storage:
+    size: 1Gi
+  # Bootstrap configuration for initial database setup
+  bootstrap:
+    initdb:
+      # Initial database name
+      database: todo_db
+      # Database owner (superuser)
+      owner: todo_user
+      # Reference to the secret containing database credentials
+      secret:
+        name: db-secret

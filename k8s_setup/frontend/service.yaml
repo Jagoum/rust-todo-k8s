@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: react-todo-ui-service
+  namespace: default
+  labels:
+    app: react-todo-ui
+spec:
+  selector:
+    app: react-todo-ui
+  ports:
+    - protocol: TCP
+      port: 3000 # Frontend service port
+      targetPort: 80 # Container port where Nginx serves the app
+  type: ClusterIP

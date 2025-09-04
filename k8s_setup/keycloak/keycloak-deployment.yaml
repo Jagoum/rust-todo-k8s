@@ -17,23 +17,27 @@ spec:
       containers:
       - name: keycloak
         image: 192.168.82.89:5000/keycloak/keycloak:24.0.5
-        args: ["start-dev"]
+        args: ["start"]
         ports:
         - containerPort: 8080
-        env:
-        - name: KEYCLOAK_ADMIN
-          value: admin
-        - name: KEYCLOAK_ADMIN_PASSWORD
-          value: admin
-        - name: KC_DB
-          value: postgres
         envFrom:
         - secretRef:
             name: keycloak-db-secret
+        - configMapRef:
+            name: keycloak-config
+        env:
+        - name: KC_HOSTNAME
+          value: "keycloak.local"
         volumeMounts:
         - mountPath: /opt/keycloak/data
           name: keycloak-data
+        - mountPath: /opt/keycloak/conf
+          name: keycloak-tls
+          readOnly: true
       volumes:
       - name: keycloak-data
         persistentVolumeClaim:
           claimName: keycloak-pvc
+      - name: keycloak-tls
+        secret:
+          secretName: keycloak-tls
