@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  labels:
+    app: keycloak
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keycloak
+  template:
+    metadata:
+      labels:
+        app: keycloak
+    spec:
+      containers:
+      - name: keycloak
+        image: 192.168.82.89:5000/keycloak/keycloak:24.0.5
+        args: ["start-dev"]
+        ports:
+        - containerPort: 8080
+        env:
+        - name: KEYCLOAK_ADMIN
+          value: admin
+        - name: KEYCLOAK_ADMIN_PASSWORD
+          value: admin
+        - name: KC_DB
+          value: postgres
+        envFrom:
+        - secretRef:
+            name: keycloak-db-secret
+        volumeMounts:
+        - mountPath: /opt/keycloak/data
+          name: keycloak-data
+      volumes:
+      - name: keycloak-data
+        persistentVolumeClaim:
+          claimName: keycloak-pvc

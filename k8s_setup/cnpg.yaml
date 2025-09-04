@@ -1,5 +1,17 @@
 ---
-# CRD , creating a Cluster of PostgreSQL
+# Secret for Rust backend (already exists in your setup, shown for completeness)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: kubernetes.io/basic-auth
+stringData:
+  username: todo_user
+  password: todo_password
+  DATABASE_URL: postgres://todo_user:todo_password@my-postgres-rw:5432/todo_db
+
+---
+# PostgreSQL Cluster (CNPG)
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
@@ -12,18 +24,5 @@ spec:
     initdb:
       database: todo_db
       owner: todo_user
-      secret: 
+      secret:
         name: db-secret
-
----
-# Storing the database credentials in a Secret
-apiVersion: v1
-kind: Secret
-metadata:
-  name: db-secret
-type: Kubernetes.io/basic-auth
-stringData:
-  username: todo_user  # base64 encoded
-  password: todo_password
-  DATABASE_URL: postgres://todo_user:todo_password@my-postgres-rw:5432/todo_db
-
