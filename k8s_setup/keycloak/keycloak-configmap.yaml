@@ -9,6 +9,7 @@ data:
   KC_HOSTNAME: keycloak.local
   KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/tls.crt
   KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/tls.key
-  KC_HTTP_ENABLED: "false"
-  KC_HOSTNAME_STRICT: "true"
-  KC_HOSTNAME_STRICT_HTTPS: "true"
+  KC_HTTP_ENABLED: "true"
+  KC_HTTP_PORT: "8080"
+  KC_HOSTNAME_STRICT: "false"
+  KC_HOSTNAME_STRICT_HTTPS: "false"

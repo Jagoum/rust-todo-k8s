@@ -22,4 +22,10 @@ spec:
             - containerPort: 80
           env:
             - name: REACT_APP_BACKEND_SERVER_URL
-              value: "http://todo.com/api" # This will be handled by Ingress
+              value: "http://api.todo.local"
+            - name: REACT_APP_KEYCLOAK_URL
+              value: "https://keycloak.local"
+            - name: REACT_APP_KEYCLOAK_REALM
+              value: "master"
+            - name: REACT_APP_KEYCLOAK_CLIENT_ID
+              value: "todo-app"

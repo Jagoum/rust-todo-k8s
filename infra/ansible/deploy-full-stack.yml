@@ -1,0 +1,46 @@
+---
+- name: Deploy Complete Rust Todo Application Stack
+  hosts: controller
+  become: false
+  gather_facts: false
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  pre_tasks:
+    - name: Ensure required Ansible collections are installed
+      command: ansible-galaxy collection install kubernetes.core community.general
+      delegate_to: localhost
+      run_once: true
+      changed_when: false
+
+  roles:
+    - linkerd
+    - kubernetes-deployments
+
+  post_tasks:
+    - name: Wait for all deployments to be ready
+      command: kubectl wait --for=condition=available --timeout=600s deployment --all -n default
+      register: deployments_ready
+      until: deployments_ready.rc == 0
+      retries: 30
+      delay: 20
+      ignore_errors: true
+
+    - name: Display deployment status
+      command: kubectl get pods,svc,ingress -n default
+      register: status
+      changed_when: false
+
+    - name: Show deployment status
+      debug:
+        msg: "{{ status.stdout }}"
+
+    - name: Verify Linkerd injection
+      command: kubectl get pods -n default -o jsonpath='{.items[*].spec.containers[*].name}'
+      register: containers
+      changed_when: false
+
+    - name: Check if Linkerd proxies are injected
+      debug:
+        msg: "Linkerd proxy injection check: {{ 'linkerd-proxy' in containers.stdout }}"

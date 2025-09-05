@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitea-service
+  namespace: default
+  labels:
+    app: gitea
+spec:
+  selector:
+    app: gitea
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP

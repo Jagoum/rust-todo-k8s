@@ -1,0 +1,11 @@
+---
+- name: Deploy Linkerd Service Mesh
+  hosts: controller
+  become: false
+  gather_facts: true
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  roles:
+    - linkerd

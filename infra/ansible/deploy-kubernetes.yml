@@ -1,0 +1,18 @@
+---
+- name: Deploy Kubernetes Manifests
+  hosts: controller
+  become: false
+  gather_facts: false
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  pre_tasks:
+    - name: Ensure kubernetes.core collection is installed
+      command: ansible-galaxy collection install kubernetes.core
+      delegate_to: localhost
+      run_once: true
+      changed_when: false
+
+  roles:
+    - kubernetes-deployments

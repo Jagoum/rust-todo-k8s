@@ -1,0 +1,73 @@
+---
+- name: Check if Linkerd CLI is installed
+  stat:
+    path: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd"
+  register: linkerd_cli
+
+- name: Install Linkerd CLI if not present
+  get_url:
+    url: https://github.com/linkerd/linkerd2/releases/download/stable-2.14.10/linkerd2-cli-stable-2.14.10-linux-amd64
+    dest: "/tmp/linkerd"
+    mode: '0755'
+  when: not linkerd_cli.stat.exists
+
+- name: Create Linkerd directory
+  file:
+    path: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin"
+    state: directory
+    owner: "{{ ansible_user | default('ubuntu') }}"
+    group: "{{ ansible_user | default('ubuntu') }}"
+    mode: '0755'
+  when: not linkerd_cli.stat.exists
+
+- name: Move Linkerd CLI to proper location
+  command: mv /tmp/linkerd /home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd
+  when: not linkerd_cli.stat.exists
+
+- name: Ensure Linkerd CLI is executable
+  file:
+    path: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd"
+    mode: '0755'
+    owner: "{{ ansible_user | default('ubuntu') }}"
+    group: "{{ ansible_user | default('ubuntu') }}"
+
+- name: Add Linkerd to PATH in profile
+  lineinfile:
+    path: "/home/{{ ansible_user | default('ubuntu') }}/.profile"
+    line: 'export PATH="$HOME/.linkerd2/bin:$PATH"'
+    insertafter: EOF
+    create: yes
+
+- name: Install Linkerd CRDs
+  command: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd install --crds | kubectl apply -f -"
+  environment:
+    PATH: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin:{{ ansible_env.PATH }}"
+  register: linkerd_crds
+  changed_when: linkerd_crds.rc == 0
+
+- name: Install Linkerd control plane
+  command: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd install | kubectl apply -f -"
+  environment:
+    PATH: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin:{{ ansible_env.PATH }}"
+  register: linkerd_control_plane
+  changed_when: linkerd_control_plane.rc == 0
+
+- name: Wait for Linkerd to be ready
+  command: kubectl wait --for=condition=available --timeout=300s deployment/linkerd-controller -n linkerd
+  register: linkerd_ready
+  until: linkerd_ready.rc == 0
+  retries: 30
+  delay: 10
+
+- name: Annotate default namespace for Linkerd injection
+  command: kubectl annotate namespace default linkerd.io/inject=enabled --overwrite
+  register: namespace_annotation
+  changed_when: namespace_annotation.rc == 0
+
+- name: Verify Linkerd installation
+  command: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd check"
+  environment:
+    PATH: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin:{{ ansible_env.PATH }}"
+  register: linkerd_check
+  changed_when: false
+  failed_when: linkerd_check.rc != 0

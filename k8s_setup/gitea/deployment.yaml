@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitea
+  namespace: default
+  labels:
+    app: gitea
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gitea
+  template:
+    metadata:
+      labels:
+        app: gitea
+    spec:
+      containers:
+        - name: gitea
+          image: gitea/gitea:1.21.11
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GITEA__database__DB_TYPE
+              value: "sqlite3"
+            - name: GITEA__database__PATH
+              value: "/data/gitea/gitea.db"
+            - name: GITEA__server__DOMAIN
+              value: "gitea.local"
+            - name: GITEA__server__ROOT_URL
+              value: "http://gitea.local/"
+          volumeMounts:
+            - mountPath: /data
+              name: gitea-data
+      volumes:
+        - name: gitea-data
+          persistentVolumeClaim:
+            claimName: gitea-pvc

@@ -20,6 +20,7 @@ spec:
         args: ["start"]
         ports:
         - containerPort: 8080
+        - containerPort: 8443
         envFrom:
         - secretRef:
             name: keycloak-db-secret
@@ -28,6 +29,14 @@ spec:
         env:
         - name: KC_HOSTNAME
           value: "keycloak.local"
+        # CSP configuration to allow iframe loading for 3rd party cookie checks
+        - name: KC_HTTP_SECURITY_HEADERS_CSP_FRAME_SRC
+          value: "'self' http://todo.local http://api.todo.local https://keycloak.local http://keycloak.local"
+        - name: KC_HTTP_SECURITY_HEADERS_CSP_FRAME_ANCESTORS
+          value: "'self' http://todo.local http://api.todo.local https://keycloak.local http://keycloak.local"
+        # Relax CSP for development environment
+        - name: KC_HTTP_SECURITY_HEADERS_CSP_REPORT_ONLY
+          value: "false"
         volumeMounts:
         - mountPath: /opt/keycloak/data
           name: keycloak-data

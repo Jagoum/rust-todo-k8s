@@ -3,9 +3,10 @@ kind: Ingress
 metadata:
   name: keycloak-ingress
   annotations:
-    kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
     traefik.ingress.kubernetes.io/router.tls: "true"
 spec:
+  ingressClassName: traefik
   tls:
   - hosts:
     - keycloak.local
@@ -20,4 +21,4 @@ spec:
           service:
             name: keycloak
             port:
-              number: 8443
+              number: 8080
