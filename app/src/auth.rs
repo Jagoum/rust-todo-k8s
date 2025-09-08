@@ -4,9 +4,6 @@
 //! Provides secure user authentication using industry-standard practices.
 
 use std::time::SystemTime;
-use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 
 use axum::{
     body::Body,
@@ -19,49 +16,9 @@ use jsonwebtoken as jwt;
 use argon2::{Argon2, password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString}};
 use rand::rngs::OsRng;
 use uuid::Uuid;
-use serde::{Deserialize, Serialize};
 use tracing::{info, warn, error, instrument, debug};
 
 use crate::models::{AppState, AuthedUser, Claims};
-
-/// JWKS (JSON Web Key Set) structure for Keycloak
-#[derive(Debug, Serialize, Deserialize)]
-struct Jwks {
-    keys: Vec<Jwk>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Jwk {
-    kid: String,
-    kty: String,
-    n: String,
-    e: String,
-}
-
-/// Keycloak configuration
-#[derive(Clone)]
-pub struct KeycloakConfig {
-    pub issuer_url: String,
-    pub client_id: String,
-    pub jwks_url: String,
-}
-
-impl KeycloakConfig {
-    pub fn from_env() -> Option<Self> {
-        let issuer_url = std::env::var("KEYCLOAK_ISSUER_URL").ok()?;
-        let client_id = std::env::var("KEYCLOAK_CLIENT_ID").ok()?;
-        let jwks_url = format!("{}/.well-known/jwks", issuer_url);
-
-        Some(Self {
-            issuer_url,
-            client_id,
-            jwks_url,
-        })
-    }
-}
-
-/// Cached JWKS keys
-type JwksCache = Arc<RwLock<HashMap<String, jwt::DecodingKey>>>;
 
 /// Authentication middleware for protected routes
 /// 
@@ -101,117 +58,32 @@ pub async fn auth_middleware(
     next: Next,
 ) -> Result<Response, (StatusCode, String)> {
     debug!("Processing authentication middleware");
-
+    
     let token = extract_bearer(req.headers()).ok_or_else(|| {
         warn!("Missing Authorization header");
         (StatusCode::UNAUTHORIZED, "missing bearer".to_string())
     })?;
 
-    // Try local JWT validation first
     let decoding_key = jwt::DecodingKey::from_secret(state.jwt_secret.as_bytes());
     let validation = jwt::Validation::new(jwt::Algorithm::HS256);
-    let local_result = jwt::decode::<Claims>(&token, &decoding_key, &validation);
+    let data = jwt::decode::<Claims>(&token, &decoding_key, &validation)
+        .map_err(|e| {
+            warn!("Invalid JWT token: {}", e);
+            (StatusCode::UNAUTHORIZED, "token invalid".to_string())
+        })?;
 
-    if let Ok(data) = local_result {
-        let user_id = Uuid::parse_str(&data.claims.sub).map_err(|e| {
+    let user_id = Uuid::parse_str(&data.claims.sub)
+        .map_err(|e| {
             error!("Invalid user ID in token claims: {}", e);
             (StatusCode::UNAUTHORIZED, "bad sub".to_string())
         })?;
 
-        tracing::Span::current()
-            .record("user_id", &tracing::field::display(&user_id))
-            .record("username", &data.claims.username);
-
-        info!("User authenticated successfully with local JWT");
-        req.extensions_mut().insert(AuthedUser { user_id, username: data.claims.username.clone() });
-        return Ok(next.run(req).await);
-    }
-
-    // If local validation fails, try Keycloak validation
-    let keycloak_config = match KeycloakConfig::from_env() {
-        Some(cfg) => cfg,
-        None => {
-            warn!("Keycloak config missing");
-            return Err((StatusCode::UNAUTHORIZED, "invalid token".to_string()));
-        }
-    };
-
-    // Fetch JWKS keys cache (in-memory)
-    static JWKS_CACHE: once_cell::sync::Lazy<JwksCache> = once_cell::sync::Lazy::new(|| Arc::new(RwLock::new(HashMap::new())));
-    let jwks_cache = JWKS_CACHE.clone();
-
-    // Decode token header to get kid
-    let header = jwt::decode_header(&token).map_err(|e| {
-        warn!("Failed to decode JWT header: {}", e);
-        (StatusCode::UNAUTHORIZED, "invalid token".to_string())
-    })?;
-
-    let kid = header.kid.ok_or_else(|| {
-        warn!("JWT token missing kid");
-        (StatusCode::UNAUTHORIZED, "invalid token".to_string())
-    })?;
-
-    // Try to get decoding key from cache
-    let key_opt = {
-        let cache = jwks_cache.read().await;
-        cache.get(&kid).cloned()
-    };
-
-    let decoding_key = if let Some(key) = key_opt {
-        key
-    } else {
-        // Fetch JWKS from Keycloak
-        let jwks_resp = reqwest::get(&keycloak_config.jwks_url).await.map_err(|e| {
-            error!("Failed to fetch JWKS: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, "jwks fetch error".to_string())
-        })?;
-
-        let jwks: Jwks = jwks_resp.json().await.map_err(|e| {
-            error!("Failed to parse JWKS JSON: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, "jwks parse error".to_string())
-        })?;
-
-        // Find key by kid
-        let jwk = jwks.keys.into_iter().find(|k| k.kid == kid).ok_or_else(|| {
-            warn!("JWKS key not found for kid: {}", kid);
-            (StatusCode::UNAUTHORIZED, "invalid token".to_string())
-        })?;
-
-        // Construct decoding key
-        let key = jwt::DecodingKey::from_rsa_components(&jwk.n, &jwk.e).map_err(|e| {
-            error!("Failed to create decoding key: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, "key error".to_string())
-        })?;
-
-        // Cache the key
-        {
-            let mut cache = jwks_cache.write().await;
-            cache.insert(kid.clone(), key.clone());
-        }
-
-        key
-    };
-
-    // Validate token with Keycloak key
-    let mut validation = jwt::Validation::new(jwt::Algorithm::RS256);
-    validation.set_audience(&[keycloak_config.client_id.as_str()]);
-    validation.set_issuer(&[keycloak_config.issuer_url.as_str()]);
-
-    let data = jwt::decode::<Claims>(&token, &decoding_key, &validation).map_err(|e| {
-        warn!("Invalid Keycloak JWT token: {}", e);
-        (StatusCode::UNAUTHORIZED, "token invalid".to_string())
-    })?;
-
-    let user_id = Uuid::parse_str(&data.claims.sub).map_err(|e| {
-        error!("Invalid user ID in token claims: {}", e);
-        (StatusCode::UNAUTHORIZED, "bad sub".to_string())
-    })?;
-
+    // Add user info to tracing span
     tracing::Span::current()
         .record("user_id", &tracing::field::display(&user_id))
         .record("username", &data.claims.username);
 
-    info!("User authenticated successfully with Keycloak JWT");
+    info!("User authenticated successfully");
     req.extensions_mut().insert(AuthedUser { user_id, username: data.claims.username.clone() });
     Ok(next.run(req).await)
 }
@@ -277,13 +149,7 @@ pub fn issue_token(secret: &str, user_id: Uuid, username: &str) -> anyhow::Resul
     
     let now = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs();
     let exp = now + 60 * 60 * 24; // 24 hours
-    let claims = Claims {
-        sub: user_id.to_string(),
-        username: username.to_string(),
-        exp,
-        iss: None,
-        aud: None,
-    };
+    let claims = Claims { sub: user_id.to_string(), username: username.to_string(), exp };
     let key = jwt::EncodingKey::from_secret(secret.as_bytes());
     let token = jwt::encode(&jwt::Header::new(jwt::Algorithm::HS256), &claims, &key)?;
     

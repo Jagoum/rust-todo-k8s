@@ -23,24 +23,17 @@ pub struct AppState {
 }
 
 /// JWT token claims structure
-///
+/// 
 /// Contains the payload data embedded in JWT tokens for user authentication.
-/// Supports both local JWT and Keycloak JWT formats.
+/// Follows the standard JWT claims format with custom fields for user identification.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     /// Subject - User ID as string (standard JWT claim)
     pub sub: String,
-    /// Username for display purposes (local JWT) or preferred_username (Keycloak)
-    #[serde(alias = "preferred_username")]
+    /// Username for display purposes
     pub username: String,
     /// Expiration timestamp as Unix epoch seconds (standard JWT claim)
     pub exp: u64,
-    /// Issuer (Keycloak realm URL) - optional for local JWT
-    #[serde(default)]
-    pub iss: Option<String>,
-    /// Audience (client ID) - optional for local JWT
-    #[serde(default)]
-    pub aud: Option<String>,
 }
 
 /// User registration request payload

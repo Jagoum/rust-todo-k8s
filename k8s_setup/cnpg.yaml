@@ -1,0 +1,29 @@
+---
+# CRD , creating a Cluster of PostgreSQL
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: my-postgres
+spec:
+  instances: 3
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      database: todo_db
+      owner: todo_user
+      secret: 
+        name: db-secret
+
+---
+# Storing the database credentials in a Secret
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Kubernetes.io/basic-auth
+stringData:
+  username: todo_user  # base64 encoded
+  password: todo_password
+  DATABASE_URL: postgres://todo_user:todo_password@my-postgres-rw:5432/todo_db
+
