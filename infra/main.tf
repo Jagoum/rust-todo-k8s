@@ -23,10 +23,10 @@ resource "multipass_instance" "worker" {
 }
 
 output "controller_ip" {
-  value = multipass_instance.controller
+  value = multipass_instance.controller.ipv4_address
 }
 
 output "worker_ips" {
-  value = [for instance in multipass_instance.worker : instance]
+  value = [for instance in multipass_instance.worker : instance.ipv4_address]
 }
 

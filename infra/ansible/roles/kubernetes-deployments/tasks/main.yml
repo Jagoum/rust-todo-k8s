@@ -2,56 +2,56 @@
 - name: Deploy backend Kubernetes manifests
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/backend/deployment.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/backend/deployment.yaml') }}"
   register: backend_deploy
 
 - name: Deploy backend service
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/backend/service.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/backend/service.yaml') }}"
   when: backend_deploy is succeeded
 
 - name: Deploy frontend Kubernetes manifests
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/frontend/deployment.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/frontend/deployment.yaml') }}"
 
 - name: Deploy frontend service
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/frontend/service.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/frontend/service.yaml') }}"
 
 - name: Deploy Keycloak manifests
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/keycloak/keycloak-deployment.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/keycloak/keycloak-deployment.yaml') }}"
 
 - name: Deploy Keycloak service
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/keycloak/keycloak-service.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/keycloak/keycloak-service.yaml') }}"
 
 - name: Deploy Keycloak ingress
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/keycloak/keycloak-ingress.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/keycloak/keycloak-ingress.yaml') }}"
 
 - name: Deploy database manifests (CloudNativePG)
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/database/postgres-cluster.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/database/postgres-cluster.yaml') }}"
 
 - name: Deploy database secrets
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/database/db-secret.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/database/db-secret.yaml') }}"
 
 - name: Deploy ingress manifests for frontend and backend
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/ingress/frontend-ingress.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/ingress/frontend-ingress.yaml') }}"
 
 - name: Deploy backend ingress
   kubernetes.core.k8s:
     state: present
-    definition: "{{ lookup('file', 'k8s_setup/ingress/backend-ingress.yaml') }}"
+    definition: "{{ lookup('file', '../../../../k8s_setup/ingress/backend-ingress.yaml') }}"

@@ -39,21 +39,22 @@
     create: yes
 
 - name: Install Linkerd CRDs
-  command: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd install --crds | kubectl apply -f -"
+  shell: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd install --crds | kubectl apply -f -"
   environment:
     PATH: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin:{{ ansible_env.PATH }}"
   register: linkerd_crds
   changed_when: linkerd_crds.rc == 0
+  ignore_errors: true
 
 - name: Install Linkerd control plane
-  command: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd install | kubectl apply -f -"
+  shell: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin/linkerd install | kubectl apply -f -"
   environment:
     PATH: "/home/{{ ansible_user | default('ubuntu') }}/.linkerd2/bin:{{ ansible_env.PATH }}"
   register: linkerd_control_plane
   changed_when: linkerd_control_plane.rc == 0
 
 - name: Wait for Linkerd to be ready
-  command: kubectl wait --for=condition=available --timeout=300s deployment/linkerd-controller -n linkerd
+  command: kubectl wait --for=condition=available --timeout=300s deployment/linkerd-destination deployment/linkerd-identity deployment/linkerd-proxy-injector -n linkerd
   register: linkerd_ready
   until: linkerd_ready.rc == 0
   retries: 30
