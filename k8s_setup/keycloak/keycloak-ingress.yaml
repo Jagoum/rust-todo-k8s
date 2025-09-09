@@ -3,15 +3,9 @@ kind: Ingress
 metadata:
   name: keycloak-ingress
   namespace: default
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: "websecure"
-    traefik.ingress.kubernetes.io/router.tls: "true"
+  annotations: {}
 spec:
   ingressClassName: traefik
-  tls:
-  - hosts:
-    - keycloak.local
-    secretName: keycloak-tls
   rules:
   - host: keycloak.local
     http:

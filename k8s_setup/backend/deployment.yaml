@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: rust-todo-api
-          image: "192.168.82.89:5000/todo-app-backend:latest"
+          image: "192.168.82.102:5000/todo-app-backend:latest"
           ports:
             - containerPort: 8080
           env:

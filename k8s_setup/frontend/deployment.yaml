@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: react-todo-ui
-          image: "192.168.82.89:5000/todo-app-frontend:latest"
+          image: "192.168.82.102:5000/todo-app-frontend:latest"
           ports:
             - containerPort: 80
           env:
