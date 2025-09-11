@@ -167,25 +167,3 @@
     replace: "server: https://{{ ansible_host | default(ansible_default_ipv4.address) }}:6443"
   when: "'controller' in group_names"
 
-- name: Install Rust toolchain on controller user
-  become: true
-  become_user: "{{ ansible_user | default('ubuntu') }}"
-  shell: |
-    set -e
-    if ! [ -x "$HOME/.cargo/bin/rustc" ]; then
-      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
-    fi
-  args:
-    executable: /bin/bash
-  environment:
-    CARGO_HOME: "/home/{{ ansible_user | default('ubuntu') }}/.cargo"
-    RUSTUP_HOME: "/home/{{ ansible_user | default('ubuntu') }}/.rustup"
-  when: "'controller' in group_names"
-
-- name: Ensure Rust is on PATH for controller user
-  lineinfile:
-    path: "/home/{{ ansible_user | default('ubuntu') }}/.profile"
-    line: 'export PATH="$HOME/.cargo/bin:$PATH"'
-    insertafter: EOF
-    create: yes
-  when: "'controller' in group_names"

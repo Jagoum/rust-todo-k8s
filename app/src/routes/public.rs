@@ -94,10 +94,16 @@ pub async fn register(State(state): State<AppState>, Json(payload): Json<Registe
                 if db_err.code().as_deref() == Some("23505") {
                     warn!("Registration failed: username already taken");
                     return (StatusCode::CONFLICT, "username taken").into_response();
+                } else {
+                    // Log the specific database error code and message for better debugging
+                    error!("Database error during registration: Code: {:?}, Message: {:?}", db_err.code(), db_err.message());
+                    return (StatusCode::INTERNAL_SERVER_ERROR, format!("db error: {:?}", db_err)).into_response();
                 }
+            } else {
+                // Log if the error is not a database error
+                error!("Non-database error during registration: {}", e);
+                return (StatusCode::INTERNAL_SERVER_ERROR, format!("unexpected error: {}", e)).into_response();
             }
-            error!("Database error during registration: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, format!("db error: {}", e)).into_response()
         }
     }
 }

@@ -1,5 +1,5 @@
 # PostgreSQL Cluster Configuration using CloudNativePG (CNPG)
-# This creates a highly available PostgreSQL cluster with 3 instances
+# This creates a PostgreSQL cluster with 1 instance
 # CNPG provides automated failover, backup, and recovery capabilities
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
@@ -8,7 +8,7 @@ metadata:
   namespace: default
 spec:
   # Number of PostgreSQL instances (pods) in the cluster
-  instances: 3
+  instances: 1
   # Storage configuration for persistent data
   storage:
     size: 1Gi

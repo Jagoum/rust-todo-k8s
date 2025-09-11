@@ -2,9 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: keycloak
-  namespace: default
-  labels:
-    app: keycloak
 spec:
   replicas: 1
   selector:
@@ -20,7 +17,6 @@ spec:
         image: 192.168.82.102:5000/keycloak/keycloak:24.0.5
         args: ["start"]
         ports:
-        - containerPort: 8080
         - containerPort: 8443
         envFrom:
         - secretRef:
@@ -30,14 +26,16 @@ spec:
         env:
         - name: KC_HOSTNAME
           value: "keycloak.local"
-        # CSP configuration to allow iframe loading for 3rd party cookie checks
+        - name: KC_PROXY_HEADERS
+          value: "xforwarded"
+        - name: KC_HTTPS_PORT
+          value: "8443"
         - name: KC_HTTP_SECURITY_HEADERS_CSP_FRAME_SRC
           value: "'self' http://todo.local http://api.todo.local https://keycloak.local http://keycloak.local"
         - name: KC_HTTP_SECURITY_HEADERS_CSP_FRAME_ANCESTORS
           value: "'self' http://todo.local http://api.todo.local https://keycloak.local http://keycloak.local"
-        # Relax CSP for development environment
         - name: KC_HTTP_SECURITY_HEADERS_CSP_REPORT_ONLY
-          value: "false"
+          value: "true"
         volumeMounts:
         - mountPath: /opt/keycloak/data
           name: keycloak-data

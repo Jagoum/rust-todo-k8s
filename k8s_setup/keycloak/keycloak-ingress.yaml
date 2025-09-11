@@ -6,6 +6,10 @@ metadata:
   annotations: {}
 spec:
   ingressClassName: traefik
+  tls:
+  - hosts:
+    - keycloak.local
+    secretName: keycloak-tls
   rules:
   - host: keycloak.local
     http:
@@ -17,3 +21,4 @@ spec:
             name: keycloak
             port:
               number: 8080
+  
